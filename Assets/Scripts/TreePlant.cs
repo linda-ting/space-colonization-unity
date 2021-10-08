@@ -52,14 +52,8 @@ namespace AssemblyCSharp.Assets.Scripts
         }
 
         /// <summary>
-        /// Print tree out to a txt file
+        /// Draw gizmos for debugging
         /// </summary>
-        /// <param name="filename"></param>
-        public void Print(string filename)
-        {
-            // TODO
-        }
-
         public void DrawGizmos()
         {
             _root.DrawGizmos();
