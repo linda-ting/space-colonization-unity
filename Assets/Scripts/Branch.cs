@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using AssemblyCSharp.Assets.Scripts;
 
 namespace AssemblyCSharp.Assets.Scripts
 {
@@ -24,8 +23,18 @@ namespace AssemblyCSharp.Assets.Scripts
         private BranchType _type;
         private float _length;
 
+        public const float InternodeLength = 1.5f;
+        public const float RollAngle = 0.523f;
+        public const float BranchingAngle = 0.523f;
+        public const float GrowthLength = 1.0f;
+        public const float DiameterCoeff = 0.6f;
+        public const float KillDistance = 2.0f;
+        public const float PerceptionAngle = 0.523f;
+        public const float PerceptionRadius = 1.5f;
+
         // public accessors for private properties
         public Vector3 Position => _position;
+        public Vector3 PositionEnd => _position + _orientation * _length;
         public Vector3 Orientation => _orientation;
         public uint Degree => _degree;
         public Branch Parent => _parent;
@@ -34,18 +43,20 @@ namespace AssemblyCSharp.Assets.Scripts
         public float Length => _length;
 
         public Branch()
-            : this(Vector3.zero, Vector3.up, BranchType.metamer, 0, null) { }
+            : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }
 
-        public Branch(Vector3 position, Vector3 orientation, BranchType type)
-            : this(position, orientation, type, 0, null) { }
+        public Branch(Vector3 position, Vector3 orientation, BranchType type, float length)
+            : this(position, orientation, type, length, 0, null) { }
 
-        public Branch(Vector3 position, Vector3 orientation, BranchType type, uint degree, Branch parent)
+        public Branch(Vector3 position, Vector3 orientation, BranchType type, float length, uint degree, Branch parent)
         {
             _position = position;
             _orientation = orientation;
             _degree = degree;
             _parent = parent;
+            _children = new List<Branch>();
             _type = type;
+            _length = length;
         }
 
         /// <summary>
@@ -88,12 +99,30 @@ namespace AssemblyCSharp.Assets.Scripts
         }
 
         /// <summary>
+        /// Set random growth direction for this branch
+        /// </summary>
+        private void SetRandomOrientation()
+        {
+            _orientation = new Vector3(Random.value, Random.value, Random.value).normalized;
+            _length = GrowthLength;
+        }
+
+        /// <summary>
+        /// Calculates random growth direction
+        /// </summary>
+        /// <returns></returns>
+        private static Vector3 GetRandomOrientation()
+        {
+            return new Vector3(Random.value, Random.value, Random.value).normalized;
+        }
+
+        /// <summary>
         /// Grow this branch (recursive & rule-based)
         /// </summary>
         public void Grow()
         {
             // grow children
-            for (int i = 0; i < Children.Count; i++)
+            for (int i = 0; i < _children.Count; i++)
             {
                 _children[i].Grow();
             }
@@ -104,23 +133,22 @@ namespace AssemblyCSharp.Assets.Scripts
                 _type = BranchType.internode;
 
                 // add lateral bud
-                // TODO set bud position and orientation
-                Vector3 budPos = _position;
-                Vector3 budOri = _orientation;
-                Branch bud = new Branch(budPos, budOri, BranchType.lateral_bud);
+                Vector3 budPos = _position + _orientation * _length;
+                //Vector3 budOri = _orientation;
+                Vector3 budOri = GetRandomOrientation();
+                Debug.Log("bud orientation " + budOri + ", bud position " + budPos);
+                Branch bud = new Branch(budPos, budOri, BranchType.lateral_bud, GrowthLength);
                 AddChild(bud);
-
             }
             else if (_type == BranchType.lateral_bud)
             {
                 // grow lateral bud into apical bud
-                // TODO set bud position and orientation
-                Vector3 budPos = _position;
-                Vector3 budOri = _orientation;
+                Vector3 budPos = _position + _orientation * _length;
+                //Vector3 budOri = _orientation;
+                Vector3 budOri = GetRandomOrientation();
                 _position = budPos;
                 _orientation = budOri;
                 _type = BranchType.apical_bud;
-
             }
             else if (_type == BranchType.apical_bud)
             {
@@ -128,23 +156,70 @@ namespace AssemblyCSharp.Assets.Scripts
                 _type = BranchType.metamer;
 
                 // add apical bud
-                // TODO set bud position and orientation
-                Vector3 budPos = _position;
-                Vector3 budOri = _orientation;
-                Branch bud = new Branch(budPos, budOri, BranchType.apical_bud);
+                Vector3 budPos = _position + _orientation * _length;
+                //Vector3 budOri = _orientation;
+                Vector3 budOri = GetRandomOrientation();
+                Branch bud = new Branch(budPos, budOri, BranchType.apical_bud, GrowthLength);
                 AddChild(bud);
             }
         }
 
-        /*
         /// <summary>
-        /// 
+        /// Colonizes space!
         /// </summary>
         /// <param name="c"></param>
-        public void ColonizeSpace(AttractorCloud c)
+        public void ColonizeSpace(AttractorCloud cloud)
         {
-            // TODO
-        }*/
+            // colonize children's space
+            foreach (Branch b in _children)
+            {
+                b.ColonizeSpace(cloud);
+            }
+
+            // remove attractor points within kill distance
+            foreach (AttractorPoint point in cloud.Points)
+            {
+                if (Vector3.Distance(PositionEnd, point.Position) < KillDistance)
+                {
+                    cloud.RemovePoint(point);
+                }
+            }
+
+            // add attractors to this branch
+            List<AttractorPoint> currAttractors = new List<AttractorPoint>();
+            float minDist = float.MaxValue;
+            foreach (AttractorPoint point in cloud.Points)
+            {
+                float dist = Vector3.Distance(PositionEnd, point.Position);
+                if (dist <= PerceptionRadius && dist < minDist)
+                {
+                    minDist = dist;
+                    currAttractors.Add(point);
+                }
+            }
+
+            // grow branch towards attractors
+            Vector3 orientation = Vector3.zero;
+            Vector3 centroid = Vector3.zero;
+            if (currAttractors.Count > 0)
+            {
+                // average growth direction
+                foreach (AttractorPoint point in currAttractors)
+                {
+                    orientation += Vector3.Normalize(point.Position - PositionEnd);
+                    centroid += point.Position;
+                }
+                orientation /= currAttractors.Count;
+                _orientation = orientation;
+
+                centroid /= currAttractors.Count;
+                _length = Vector3.Distance(centroid, PositionEnd);
+            } else
+            {
+                // grow in a random direction
+                SetRandomOrientation();
+            }
+        }
 
         /// <summary>
         /// Print branch out to a txt file
@@ -153,6 +228,24 @@ namespace AssemblyCSharp.Assets.Scripts
         public void Print(string file)
         {
             // TODO
+        }
+
+        /// <summary>
+        /// Draw gizmos for debugging
+        /// </summary>
+        public void DrawGizmos()
+        {
+            foreach (Branch b in _children)
+            {
+                b.DrawGizmos();
+            }
+
+            Debug.Log("position: " + _position + ", " + "orientation: " + _orientation);
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(_position, PositionEnd);
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(_position, 0.05f);
+            Gizmos.DrawSphere(PositionEnd, 0.05f);
         }
     }
 }

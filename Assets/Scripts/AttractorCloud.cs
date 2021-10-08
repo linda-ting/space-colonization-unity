@@ -37,5 +37,26 @@ namespace AssemblyCSharp.Assets.Scripts
         {
             _points.Add(point);
         }
+
+        /// <summary>
+        /// Remove a single attractor point
+        /// </summary>
+        /// <param name="point"></param>
+        public void RemovePoint(AttractorPoint point)
+        {
+            _points.Remove(point);
+        }
+
+        /// <summary>
+        /// Draw gizmos for debugging
+        /// </summary>
+        public void DrawGizmos()
+        {
+            Gizmos.color = Color.red;
+            foreach (AttractorPoint p in _points)
+            {
+                Gizmos.DrawSphere(p.Position, 0.05f);
+            }
+        }
     }
 }
