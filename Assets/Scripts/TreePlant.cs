@@ -14,11 +14,9 @@ namespace AssemblyCSharp.Assets.Scripts
         public uint Age => _age;
         public AttractorCloud Attractors => _attractorCloud;
 
-        public TreePlant() : this(new Branch()) { }
+        public TreePlant() : this(new Branch(), new AttractorCloud()) { }
 
         public TreePlant(Branch root) : this(root, new AttractorCloud()) { }
-
-        public TreePlant(AttractorCloud cloud) : this(new Branch(), cloud) { }
 
         public TreePlant(Branch root, AttractorCloud cloud)
         {
@@ -37,18 +35,9 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void Grow()
         {
-            //ColonizeSpace();
-            _root.Grow();
+            Debug.Log("growing tree! age: " + _age);
+            _root.Grow(_attractorCloud);
             _age++;
-        }
-
-        /// <summary>
-        /// Colonizes space!
-        /// </summary>
-        /// <param name="cloud"></param>
-        public void ColonizeSpace()
-        {
-            _root.ColonizeSpace(_attractorCloud);
         }
 
         /// <summary>

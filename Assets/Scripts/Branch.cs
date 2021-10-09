@@ -22,15 +22,7 @@ namespace AssemblyCSharp.Assets.Scripts
         private List<Branch> _children;
         private BranchType _type;
         private float _length;
-
-        public const float InternodeLength = 1.5f;
-        public const float RollAngle = 0.523f;
-        public const float BranchingAngle = 0.523f;
-        public const float GrowthLength = 1.0f;
-        public const float DiameterCoeff = 0.6f;
-        public const float KillDistance = 2.0f;
-        public const float PerceptionAngle = 0.523f;
-        public const float PerceptionRadius = 1.5f;
+        private bool _isDormant;
 
         // public accessors for private properties
         public Vector3 Position => _position;
@@ -41,6 +33,17 @@ namespace AssemblyCSharp.Assets.Scripts
         public List<Branch> Children => _children;
         public BranchType Type => _type;
         public float Length => _length;
+        public bool IsDormant => _isDormant;
+
+        // constants
+        public const float InternodeLength = 1.0f;
+        public const float RollAngle = 0.523f;
+        public const float BranchingAngle = 0.523f;
+        public const float GrowthLength = 0.5f;
+        public const float DiameterCoeff = 0.6f;
+        public const float KillDistance = 0.5f;
+        public const float PerceptionAngle = 0.523f;
+        public const float PerceptionRadius = 1.5f;
 
         public Branch()
             : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }
@@ -60,6 +63,7 @@ namespace AssemblyCSharp.Assets.Scripts
             _children = new List<Branch>();
             _type = type;
             _length = length;
+            _isDormant = false;
         }
 
         /// <summary>
@@ -112,13 +116,18 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <summary>
         /// Grow this branch (recursive & rule-based)
         /// </summary>
-        public void Grow()
+        public void Grow(AttractorCloud cloud)
         {
+            //ColonizeSpace(cloud);
+
             // grow children
-            for (int i = 0; i < _children.Count; i++)
+            foreach (Branch b in _children)
             {
-                _children[i].Grow();
+                b.Grow(cloud);
             }
+
+            // do not grow this branch if dormant
+            if (_isDormant) return;
 
             if (_type == BranchType.metamer)
             {
@@ -127,10 +136,11 @@ namespace AssemblyCSharp.Assets.Scripts
 
                 // add lateral bud
                 Vector3 budPos = PositionEnd;
-                //Vector3 budOri = _orientation;
-                Vector3 budOri = GetRandomOrientation();
+                Vector3 budOri = _orientation;
+                //Vector3 budOri = GetRandomOrientation();
                 Branch bud = new Branch(budPos, budOri, BranchType.lateral_bud);
                 AddChild(bud);
+                bud.ColonizeSpace(cloud);
             }
             else if (_type == BranchType.lateral_bud)
             {
@@ -144,10 +154,11 @@ namespace AssemblyCSharp.Assets.Scripts
 
                 // add apical bud
                 Vector3 budPos = PositionEnd;
-                //Vector3 budOri = _orientation;
-                Vector3 budOri = GetRandomOrientation();
+                Vector3 budOri = _orientation;
+                //Vector3 budOri = GetRandomOrientation();
                 Branch bud = new Branch(budPos, budOri, BranchType.apical_bud);
                 AddChild(bud);
+                bud.ColonizeSpace(cloud);
             }
         }
 
@@ -157,33 +168,29 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <param name="c"></param>
         public void ColonizeSpace(AttractorCloud cloud)
         {
-            // colonize children's space
-            foreach (Branch b in _children)
-            {
-                b.ColonizeSpace(cloud);
-            }
-
-            // remove attractor points within kill distance
-            foreach (AttractorPoint point in cloud.Points)
-            {
-                if (Vector3.Distance(PositionEnd, point.Position) < KillDistance)
-                {
-                    cloud.RemovePoint(point);
-                }
-            }
-
-            // add attractors to this branch
             List<AttractorPoint> currAttractors = new List<AttractorPoint>();
             float minDist = float.MaxValue;
+
+            // remove attractor points within kill distance & find attractors for this branch
             foreach (AttractorPoint point in cloud.Points)
             {
                 float dist = Vector3.Distance(PositionEnd, point.Position);
-                if (dist <= PerceptionRadius && dist < minDist)
+
+                if (dist < KillDistance)
                 {
-                    minDist = dist;
-                    currAttractors.Add(point);
+                    cloud.RemovePoint(point);
+                }
+                else
+                {
+                    if (dist <= PerceptionRadius && dist < minDist)
+                    {
+                        minDist = dist;
+                        currAttractors.Add(point);
+                    }
                 }
             }
+
+            Debug.Log("num attractors: " + currAttractors.Count);
 
             // grow branch towards attractors
             Vector3 orientation = Vector3.zero;
@@ -201,10 +208,13 @@ namespace AssemblyCSharp.Assets.Scripts
 
                 centroid /= currAttractors.Count;
                 _length = Vector3.Distance(centroid, PositionEnd);
+
+                Debug.Log("setting new orientation: " + _orientation);
+                Debug.Log("setting new length: " + _length);
             } else
             {
-                // grow in a random direction
-                SetRandomOrientation();
+                // make dormant
+                _isDormant = true;
             }
         }
 

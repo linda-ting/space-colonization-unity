@@ -10,16 +10,14 @@ namespace AssemblyCSharp.Assets.Scripts
         public TreePlant _treePlant;
         public AttractorCloud _attractors;
         public float _timeLapsed;
-        public const float _updateTime = 1.0f;
+        public const float _updateTime = 0.5f;
 
         // Start is called before the first frame update
         void Start()
         {
             _timeLapsed = 0.0f;
-
-            // TODO create test attractor points
             _attractors = new AttractorCloud();
-            _treePlant = new TreePlant(_attractors);
+            _treePlant = new TreePlant(new Branch(), _attractors);
         }
 
         // Update is called once per frame
@@ -29,7 +27,6 @@ namespace AssemblyCSharp.Assets.Scripts
 
             if (_timeLapsed > _updateTime)
             {
-                Debug.Log("growing tree!");
                 _timeLapsed = 0.0f;
                 _treePlant.Grow();
             }

@@ -10,14 +10,35 @@ namespace AssemblyCSharp.Assets.Scripts
 
         public List<AttractorPoint> Points => _points;
 
+        public const int NumSampleAttractors = 500;
+
         public AttractorCloud()
         {
             _points = new List<AttractorPoint>();
+            GenerateAttractorsSphere(3.0f);
         }
 
         public AttractorCloud(List<AttractorPoint> points)
         {
             _points = points;
+        }
+
+        /// <summary>
+        /// Generates randomly sampled attractor points within a specific sphere radius
+        /// </summary>
+        /// <param name="radius"></param>
+        private void GenerateAttractorsSphere(float radius)
+        {
+            Vector3 offset = 1.5f * radius * Vector3.up;
+            for (int i = 0; i < NumSampleAttractors; i++)
+            {
+                float x = Random.value - 0.5f;
+                float y = Random.value - 0.5f;
+                float z = Random.value - 0.5f;
+                Vector3 pos = new Vector3(x, y, z).normalized * radius + offset;
+                AttractorPoint attractor = new AttractorPoint(pos);
+                _points.Add(attractor);
+            }
         }
 
         /// <summary>
