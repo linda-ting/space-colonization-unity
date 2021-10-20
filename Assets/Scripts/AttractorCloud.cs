@@ -10,12 +10,12 @@ namespace AssemblyCSharp.Assets.Scripts
 
         public List<AttractorPoint> Points => _points;
 
-        public const int NumSampleAttractors = 500;
+        public const int NumSampleAttractors = 1000;
 
         public AttractorCloud()
         {
             _points = new List<AttractorPoint>();
-            GenerateAttractorsSphere(3.0f);
+            GenerateAttractorsSphere(4.0f);
         }
 
         public AttractorCloud(List<AttractorPoint> points)
@@ -29,7 +29,7 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <param name="radius"></param>
         private void GenerateAttractorsSphere(float radius)
         {
-            Vector3 offset = 1.5f * radius * Vector3.up;
+            Vector3 offset = radius * Vector3.up;
             for (int i = 0; i < NumSampleAttractors; i++)
             {
                 float x = Random.value - 0.5f;

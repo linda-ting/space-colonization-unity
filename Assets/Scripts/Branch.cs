@@ -39,7 +39,7 @@ namespace AssemblyCSharp.Assets.Scripts
         public const float InternodeLength = 1.0f;
         public const float RollAngle = 0.523f;
         public const float BranchingAngle = 0.523f;
-        public const float GrowthLength = 0.5f;
+        public const float GrowthLength = 0.25f;
         public const float DiameterCoeff = 0.6f;
         public const float KillDistance = 0.5f;
         public const float PerceptionAngle = 0.523f;
@@ -118,8 +118,6 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void Grow(AttractorCloud cloud)
         {
-            //ColonizeSpace(cloud);
-
             // grow children
             foreach (Branch b in _children)
             {
@@ -137,7 +135,6 @@ namespace AssemblyCSharp.Assets.Scripts
                 // add lateral bud
                 Vector3 budPos = PositionEnd;
                 Vector3 budOri = _orientation;
-                //Vector3 budOri = GetRandomOrientation();
                 Branch bud = new Branch(budPos, budOri, BranchType.lateral_bud);
                 AddChild(bud);
                 bud.ColonizeSpace(cloud);
@@ -146,6 +143,7 @@ namespace AssemblyCSharp.Assets.Scripts
             {
                 // grow lateral bud into apical bud
                 _type = BranchType.apical_bud;
+                ColonizeSpace(cloud);
             }
             else if (_type == BranchType.apical_bud)
             {
@@ -155,7 +153,6 @@ namespace AssemblyCSharp.Assets.Scripts
                 // add apical bud
                 Vector3 budPos = PositionEnd;
                 Vector3 budOri = _orientation;
-                //Vector3 budOri = GetRandomOrientation();
                 Branch bud = new Branch(budPos, budOri, BranchType.apical_bud);
                 AddChild(bud);
                 bud.ColonizeSpace(cloud);
@@ -172,7 +169,7 @@ namespace AssemblyCSharp.Assets.Scripts
             float minDist = float.MaxValue;
 
             // remove attractor points within kill distance & find attractors for this branch
-            foreach (AttractorPoint point in cloud.Points)
+            foreach (AttractorPoint point in cloud.Points.ToArray())
             {
                 float dist = Vector3.Distance(PositionEnd, point.Position);
 
@@ -223,7 +220,6 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void DrawGizmos()
         {
-            Debug.Log("position: " + _position + ", " + "orientation: " + _orientation);
             Gizmos.color = Color.green;
             Gizmos.DrawLine(_position, PositionEnd);
             Gizmos.color = Color.green;
