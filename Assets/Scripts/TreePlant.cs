@@ -35,6 +35,8 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void Grow()
         {
+            if (_attractorCloud.Points.Count <= 20 || _age >= 40) return;
+
             Debug.Log("growing tree! age: " + _age);
             _root.Grow(_attractorCloud);
             _age++;

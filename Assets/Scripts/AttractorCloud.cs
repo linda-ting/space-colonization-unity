@@ -10,7 +10,7 @@ namespace AssemblyCSharp.Assets.Scripts
 
         public List<AttractorPoint> Points => _points;
 
-        public const int NumSampleAttractors = 1000;
+        public const int NumSampleAttractors = 200;
 
         public AttractorCloud()
         {

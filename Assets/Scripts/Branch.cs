@@ -39,11 +39,11 @@ namespace AssemblyCSharp.Assets.Scripts
         public const float InternodeLength = 1.0f;
         public const float RollAngle = 0.523f;
         public const float BranchingAngle = 0.523f;
-        public const float GrowthLength = 0.25f;
+        public const float GrowthLength = 0.75f;
         public const float DiameterCoeff = 0.6f;
-        public const float KillDistance = 0.5f;
-        public const float PerceptionAngle = 0.523f;
-        public const float PerceptionRadius = 1.5f;
+        public const float KillDistance = 0.75f;
+        public const float PerceptionLength = 0.75f;
+        public const float PerceptionRadius = 0.15f;
 
         public Branch()
             : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }
@@ -172,6 +172,9 @@ namespace AssemblyCSharp.Assets.Scripts
             foreach (AttractorPoint point in cloud.Points.ToArray())
             {
                 float dist = Vector3.Distance(PositionEnd, point.Position);
+                float cone_dist = Vector3.Dot(point.Position - PositionEnd, Orientation);
+                float cone_radius = cone_dist * PerceptionLength / PerceptionRadius;
+                float orth_dist = Vector3.Magnitude(point.Position - PositionEnd - cone_dist * Orientation);
 
                 if (dist < KillDistance)
                 {
@@ -179,9 +182,11 @@ namespace AssemblyCSharp.Assets.Scripts
                 }
                 else
                 {
-                    if (dist <= PerceptionRadius && dist < minDist)
+                    if (cone_dist < 0 || cone_dist > PerceptionLength) continue;
+
+                    if (orth_dist <= cone_radius && orth_dist < minDist)
                     {
-                        minDist = dist;
+                        minDist = orth_dist;
                         currAttractors.Add(point);
                     }
                 }
