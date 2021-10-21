@@ -10,12 +10,12 @@ namespace AssemblyCSharp.Assets.Scripts
 
         public List<AttractorPoint> Points => _points;
 
-        public const int NumSampleAttractors = 200;
+        public const int NumSampleAttractors = 300;
 
         public AttractorCloud()
         {
             _points = new List<AttractorPoint>();
-            GenerateAttractorsSphere(4.0f);
+            GenerateAttractorsSphere(3.0f);
         }
 
         public AttractorCloud(List<AttractorPoint> points)
@@ -29,15 +29,37 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <param name="radius"></param>
         private void GenerateAttractorsSphere(float radius)
         {
-            Vector3 offset = radius * Vector3.up;
+            Vector3 offset = 1.3f * radius * Vector3.up;
             for (int i = 0; i < NumSampleAttractors; i++)
             {
-                float x = Random.value - 0.5f;
-                float y = Random.value - 0.5f;
-                float z = Random.value - 0.5f;
-                Vector3 pos = new Vector3(x, y, z).normalized * radius + offset;
+                Vector3 dir = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
+                float r = Random.Range(0, radius);
+                Vector3 pos = r * dir + offset;
                 AttractorPoint attractor = new AttractorPoint(pos);
                 _points.Add(attractor);
+            }
+        }
+
+        /// <summary>
+        /// Clears saved nearest distance and nearest branch for all attractor points
+        /// </summary>
+        public void ClearNearestBranches()
+        {
+            foreach (AttractorPoint p in _points)
+            {
+                p.ClearNearestBranch();
+            }
+        }
+
+        /// <summary>
+        /// Adds attractor points to their respective nearest branches
+        /// </summary>
+        public void AddAttractorsToBranches()
+        {
+            foreach (AttractorPoint p in _points)
+            {
+                if (p.IsRemoved) continue;
+                p.AddAttractorToBranch();
             }
         }
 
@@ -65,7 +87,16 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <param name="point"></param>
         public void RemovePoint(AttractorPoint point)
         {
-            _points.Remove(point);
+            point.Remove();
+        }
+
+        public void ClearRemovedPoints()
+        {
+            for (int i = _points.Count - 1; i >= 0; i--)
+            {
+                AttractorPoint p = _points[i];
+                if (p.IsRemoved) _points.Remove(p);
+            }
         }
 
         /// <summary>
@@ -73,10 +104,9 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void DrawGizmos()
         {
-            Gizmos.color = Color.red;
             foreach (AttractorPoint p in _points)
             {
-                Gizmos.DrawSphere(p.Position, 0.05f);
+                p.DrawGizmos();
             }
         }
     }

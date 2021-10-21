@@ -22,7 +22,11 @@ namespace AssemblyCSharp.Assets.Scripts
         private List<Branch> _children;
         private BranchType _type;
         private float _length;
+        private List<AttractorPoint> _attractors;
         private bool _isDormant;
+        private uint _id;
+
+        private static uint _lastId = 0;
 
         // public accessors for private properties
         public Vector3 Position => _position;
@@ -33,17 +37,20 @@ namespace AssemblyCSharp.Assets.Scripts
         public List<Branch> Children => _children;
         public BranchType Type => _type;
         public float Length => _length;
+        public List<AttractorPoint> Attractors => _attractors;
         public bool IsDormant => _isDormant;
+        public uint Id => _id;
 
         // constants
         public const float InternodeLength = 1.0f;
         public const float RollAngle = 0.523f;
         public const float BranchingAngle = 0.523f;
-        public const float GrowthLength = 0.75f;
+        public const float GrowthLength = 0.4f;
+        public const float KillDistance = 0.9f;
+        public const float PerceptionLength = 1.5f;
+        public const float PerceptionRadius = 1.0f;
+        public const float RandomGrowthParam = 0.1f;
         public const float DiameterCoeff = 0.6f;
-        public const float KillDistance = 0.75f;
-        public const float PerceptionLength = 0.75f;
-        public const float PerceptionRadius = 0.15f;
 
         public Branch()
             : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }
@@ -63,7 +70,10 @@ namespace AssemblyCSharp.Assets.Scripts
             _children = new List<Branch>();
             _type = type;
             _length = length;
+            _attractors = new List<AttractorPoint>();
             _isDormant = false;
+            _id = _lastId + 1;
+            _lastId++;
         }
 
         /// <summary>
@@ -95,13 +105,45 @@ namespace AssemblyCSharp.Assets.Scripts
             _degree = degree;
         }
 
+        /// <summary>
+        /// Set starting position of this branch
+        /// </summary>
+        /// <param name="position"></param>
+        public void SetPosition(Vector3 position)
+        {
+            _position = position;
+        }
+
+        /// <summary>
+        /// Add an attractor point to current list of attractors
+        /// </summary>
+        /// <param name="point"></param>
+        public void AddAttractor(AttractorPoint point)
+        {
+            _attractors.Add(point);
+        }
+
+        /// <summary>
+        /// Clear all active attractor points
+        /// </summary>
+        public void ClearAttractors()
+        {
+            foreach (Branch c in _children)
+            {
+                c.ClearAttractors();
+            }
+
+            // clear active attractors
+            _attractors.Clear();
+        }
+
         /// <summary
-        /// Calculates random orientation in positive Y direction
+        /// Calculates random orientation
         /// </summary>
         /// <returns></returns>
         private static Vector3 GetRandomOrientation()
         {
-            return new Vector3(Random.value - 0.5f, Random.value, Random.value - 0.5f).normalized;
+            return new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
         }
 
         /// <summary>
@@ -118,6 +160,8 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void Grow(AttractorCloud cloud)
         {
+            ColonizeSpace(cloud);
+
             // grow children
             foreach (Branch b in _children)
             {
@@ -137,13 +181,11 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 budOri = _orientation;
                 Branch bud = new Branch(budPos, budOri, BranchType.lateral_bud);
                 AddChild(bud);
-                bud.ColonizeSpace(cloud);
             }
             else if (_type == BranchType.lateral_bud)
             {
                 // grow lateral bud into apical bud
                 _type = BranchType.apical_bud;
-                ColonizeSpace(cloud);
             }
             else if (_type == BranchType.apical_bud)
             {
@@ -155,7 +197,42 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 budOri = _orientation;
                 Branch bud = new Branch(budPos, budOri, BranchType.apical_bud);
                 AddChild(bud);
-                bud.ColonizeSpace(cloud);
+            }
+        }
+
+        /// <summary>
+        /// Find the closest branch for each attractor point
+        /// </summary>
+        /// <param name="cloud"></param>
+        public void FindAttractors(AttractorCloud cloud)
+        {
+            // find attractors for children
+            foreach (Branch b in _children)
+            {
+                b.FindAttractors(cloud);
+            }
+
+            // iterate through all attractor points
+            foreach (AttractorPoint point in cloud.Points)
+            {
+                float dist = Vector3.Distance(PositionEnd, point.Position);
+
+                // only consider this point if within conical perception volume
+                if (dist > PerceptionLength) continue;
+
+                float cone_dist = Vector3.Dot(point.Position - PositionEnd, Orientation);
+                if (cone_dist < 0 || cone_dist > PerceptionLength) continue;
+
+                float cone_radius = cone_dist * PerceptionRadius / PerceptionLength;
+                float orth_dist = Vector3.Magnitude(point.Position - PositionEnd - cone_dist * Orientation);
+                if (orth_dist > cone_radius) continue;
+
+                // if this is the closest branch to this point, set pointer
+                if (dist < point.NearestDist)
+                {
+                    Debug.Log("setting nearest branch for point " + point.Id + ", old dist: " + point.NearestDist + ", new dist: " + dist);
+                    point.SetNearest(this, dist);
+                }
             }
         }
 
@@ -165,58 +242,53 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <param name="c"></param>
         public void ColonizeSpace(AttractorCloud cloud)
         {
-            List<AttractorPoint> currAttractors = new List<AttractorPoint>();
-            float minDist = float.MaxValue;
-
-            // remove attractor points within kill distance & find attractors for this branch
-            foreach (AttractorPoint point in cloud.Points.ToArray())
+            // remove attractor points within kill distance
+            foreach (AttractorPoint point in cloud.Points)
             {
                 float dist = Vector3.Distance(PositionEnd, point.Position);
-                float cone_dist = Vector3.Dot(point.Position - PositionEnd, Orientation);
-                float cone_radius = cone_dist * PerceptionLength / PerceptionRadius;
-                float orth_dist = Vector3.Magnitude(point.Position - PositionEnd - cone_dist * Orientation);
-
-                if (dist < KillDistance)
-                {
-                    cloud.RemovePoint(point);
-                }
-                else
-                {
-                    if (cone_dist < 0 || cone_dist > PerceptionLength) continue;
-
-                    if (orth_dist <= cone_radius && orth_dist < minDist)
-                    {
-                        minDist = orth_dist;
-                        currAttractors.Add(point);
-                    }
-                }
+                if (dist < KillDistance) cloud.RemovePoint(point);
             }
-
-            Debug.Log("num attractors: " + currAttractors.Count);
 
             // grow branch towards attractors
             Vector3 orientation = Vector3.zero;
             Vector3 centroid = Vector3.zero;
-            if (currAttractors.Count > 0)
+            if (_attractors.Count > 0)
             {
                 // average growth direction
-                foreach (AttractorPoint point in currAttractors)
+                foreach (AttractorPoint point in _attractors)
                 {
                     orientation += Vector3.Normalize(point.Position - PositionEnd);
                     centroid += point.Position;
                 }
-                orientation /= currAttractors.Count;
-                _orientation = orientation;
+                orientation /= _attractors.Count;
+                orientation += GetRandomOrientation() * RandomGrowthParam;
+                _orientation = orientation.normalized;
 
-                centroid /= currAttractors.Count;
-                _length = Vector3.Distance(centroid, PositionEnd);
+                if (_parent != null)
+                {
+                    // TODO add constraints on branching angle relative to parent branch (if any)
+                }
 
-                Debug.Log("setting new orientation: " + _orientation);
-                Debug.Log("setting new length: " + _length);
+                centroid /= _attractors.Count;
+                _length = Mathf.Min(Vector3.Distance(centroid, PositionEnd), GrowthLength);
             } else
             {
-                // make dormant
-                _isDormant = true;
+                if (_children.Count == 0)
+                {
+                    // grow extremity in random direction
+                    _orientation += GetRandomOrientation() * RandomGrowthParam;
+                    _orientation.Normalize();
+                } else
+                {
+                    // make dormant if not an extremity
+                    _isDormant = true;
+                }
+            }
+
+            // make sure children buds remain attached
+            foreach (Branch b in _children)
+            {
+                b.SetPosition(PositionEnd);
             }
         }
 

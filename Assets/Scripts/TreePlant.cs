@@ -25,20 +25,43 @@ namespace AssemblyCSharp.Assets.Scripts
             _attractorCloud = cloud;
         }
 
+        /// <summary>
+        /// Set attractor point cloud for tree to fit
+        /// </summary>
+        /// <param name="cloud"></param>
         public void SetAttractorCloud(AttractorCloud cloud)
         {
             _attractorCloud = cloud;
         }
 
         /// <summary>
-        /// 
+        /// Grow tree
         /// </summary>
         public void Grow()
         {
-            if (_attractorCloud.Points.Count <= 20 || _age >= 40) return;
+            if (_attractorCloud.Points.Count <= 20) return;
 
             Debug.Log("growing tree! age: " + _age);
+
+            // clear active attractors for branches
+            _root.ClearAttractors();
+
+            // clear nearest branches for attractor points
+            _attractorCloud.ClearNearestBranches();
+
+            // find new nearest branches for attractor points
+            _root.FindAttractors(_attractorCloud);
+
+            // add active attractors for branches
+            _attractorCloud.AddAttractorsToBranches();
+
+            // grow the tree
             _root.Grow(_attractorCloud);
+
+            // kill flagged attractor points
+            _attractorCloud.ClearRemovedPoints();
+
+            // increment age
             _age++;
         }
 

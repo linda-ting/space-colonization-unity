@@ -37,7 +37,7 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         void OnDrawGizmos()
         {
-            if (_attractors == null) return;
+            if (_attractors == null || _treePlant == null) return;
             _attractors.DrawGizmos();
             _treePlant.DrawGizmos();
         }
