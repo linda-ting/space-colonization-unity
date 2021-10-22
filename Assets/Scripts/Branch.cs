@@ -22,6 +22,7 @@ namespace AssemblyCSharp.Assets.Scripts
         private List<Branch> _children;
         private BranchType _type;
         private float _length;
+        private float _diameter;
         private List<AttractorPoint> _attractors;
         private bool _isDormant;
         private uint _id;
@@ -37,6 +38,7 @@ namespace AssemblyCSharp.Assets.Scripts
         public List<Branch> Children => _children;
         public BranchType Type => _type;
         public float Length => _length;
+        public float Diameter => _diameter;
         public List<AttractorPoint> Attractors => _attractors;
         public bool IsDormant => _isDormant;
         public uint Id => _id;
@@ -45,11 +47,15 @@ namespace AssemblyCSharp.Assets.Scripts
         public const float InternodeLength = 1.0f;
         public const float RollAngle = 0.523f;
         public const float BranchingAngle = 0.523f;
+
         public const float GrowthLength = 0.4f;
-        public const float KillDistance = 0.9f;
-        public const float PerceptionLength = 1.5f;
-        public const float PerceptionRadius = 1.0f;
+        public const float KillDistance = 1.2f;
+        public const float PerceptionLength = 1.8f;
+        public const float PerceptionRadius = 1.5f;
         public const float RandomGrowthParam = 0.1f;
+
+        public const float ExtremitiesDiameter = 0.05f;
+        public const float TrunkDiameter = 1.0f;
         public const float DiameterCoeff = 0.6f;
 
         public Branch()
@@ -72,8 +78,10 @@ namespace AssemblyCSharp.Assets.Scripts
             _length = length;
             _attractors = new List<AttractorPoint>();
             _isDormant = false;
-            _id = _lastId + 1;
+            _id = _lastId;
             _lastId++;
+
+            ComputeDiameter();
         }
 
         /// <summary>
@@ -94,6 +102,7 @@ namespace AssemblyCSharp.Assets.Scripts
         public void SetParent(Branch parent)
         {
             _parent = parent;
+            ComputeDiameter();
         }
 
         /// <summary>
@@ -153,6 +162,16 @@ namespace AssemblyCSharp.Assets.Scripts
         {
             _orientation = GetRandomOrientation();
             _length = GrowthLength;
+        }
+
+        public void GetSubtree(List<Branch> allBranches)
+        {
+            if (!allBranches.Contains(this)) allBranches.Add(this);
+
+            foreach (Branch b in _children)
+            {
+                b.GetSubtree(allBranches);
+            }
         }
 
         /// <summary>
@@ -228,11 +247,7 @@ namespace AssemblyCSharp.Assets.Scripts
                 if (orth_dist > cone_radius) continue;
 
                 // if this is the closest branch to this point, set pointer
-                if (dist < point.NearestDist)
-                {
-                    Debug.Log("setting nearest branch for point " + point.Id + ", old dist: " + point.NearestDist + ", new dist: " + dist);
-                    point.SetNearest(this, dist);
-                }
+                if (dist < point.NearestDist) point.SetNearest(this, dist);
             }
         }
 
@@ -290,6 +305,11 @@ namespace AssemblyCSharp.Assets.Scripts
             {
                 b.SetPosition(PositionEnd);
             }
+        }
+
+        public void ComputeDiameter()
+        {
+            _diameter = _parent == null ? TrunkDiameter : DiameterCoeff * _parent.Diameter;
         }
 
         /// <summary>

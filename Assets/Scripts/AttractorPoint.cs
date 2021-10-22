@@ -28,7 +28,7 @@ namespace AssemblyCSharp.Assets.Scripts
             _nearestDist = float.MaxValue;
             _nearestBranch = null;
             _isRemoved = false;
-            _id = _lastId + 1;
+            _id = _lastId;
             _lastId++;
         }
 

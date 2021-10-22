@@ -29,7 +29,7 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <param name="radius"></param>
         private void GenerateAttractorsSphere(float radius)
         {
-            Vector3 offset = 1.3f * radius * Vector3.up;
+            Vector3 offset = 1.5f * radius * Vector3.up;
             for (int i = 0; i < NumSampleAttractors; i++)
             {
                 Vector3 dir = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
