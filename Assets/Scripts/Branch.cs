@@ -56,7 +56,7 @@ namespace AssemblyCSharp.Assets.Scripts
 
         public const float ExtremitiesDiameter = 0.05f;
         public const float TrunkDiameter = 1.0f;
-        public const float DiameterCoeff = 0.6f;
+        public const float DiameterCoeff = 0.8f;
 
         public Branch()
             : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }

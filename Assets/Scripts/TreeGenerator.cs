@@ -63,10 +63,9 @@ namespace AssemblyCSharp.Assets.Scripts
 					Vector3 end_pos = q * unrotated_pos + b.PositionEnd;
 					vertices[vert_idx + j] = end_pos - transform.position;
 
-					Debug.Log("adding end pt for branch " + b.Id + " div " + j + ": " + (end_pos - transform.position));
-
 					// if this branch is root, add vertices for base of trunk
-					vertices[numBranches * BranchSubdivisions + j] = b.Position + unrotated_pos - transform.position;
+					// TODO fix triangle indexing so last branch does not connect to trunk base
+					//vertices[numBranches * BranchSubdivisions + j] = b.Position + unrotated_pos - transform.position;
 				}
 			}
 
@@ -76,7 +75,7 @@ namespace AssemblyCSharp.Assets.Scripts
 				Branch b = branches[i];
 				int face_idx = (int)b.Id * BranchSubdivisions * 6;
 				int top_idx = (int)b.Id * BranchSubdivisions;
-				int bot_idx = b.Parent == null ? numBranches * BranchSubdivisions : top_idx;
+				int bot_idx = b.Parent == null ? numBranches * BranchSubdivisions : (int)b.Parent.Id * BranchSubdivisions;
 
 				for (int j = 0; j < BranchSubdivisions; j++)
                 {
@@ -101,11 +100,11 @@ namespace AssemblyCSharp.Assets.Scripts
                 }
 			}
 
-			Mesh mesh = _meshFilter.mesh;
-			mesh.Clear();
+			Mesh mesh = new Mesh();
 			mesh.vertices = vertices;
-			mesh.triangles = triangles;
+			mesh.SetTriangles(triangles, 0);
 			mesh.RecalculateNormals();
+			_meshFilter.mesh = mesh;
 		}
 
 
