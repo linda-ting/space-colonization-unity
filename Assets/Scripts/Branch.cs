@@ -44,18 +44,18 @@ namespace AssemblyCSharp.Assets.Scripts
         public uint Id => _id;
 
         // constants
-        public const float InternodeLength = 1.0f;
-        public const float RollAngle = 0.523f;
-        public const float BranchingAngle = 0.523f;
+        public static float InternodeLength = 1.0f;
+        public static float RollAngle = 0.523f;
+        public static float BranchingAngle = 0.523f;
 
-        public const float GrowthLength = 0.4f;
-        public const float KillDistance = 0.7f;
-        public const float PerceptionLength = 1.8f;
-        public const float PerceptionRadius = 1.5f;
-        public const float RandomGrowthParam = 0.1f;
+        public static float GrowthLength = 0.4f;
+        public static float KillDistance = 0.7f;
+        public static float PerceptionLength = 1.8f;
+        public static float PerceptionRadius = 1.5f;
+        public static float RandomGrowthParam = 0.1f;
 
-        public const float TrunkDiameter = 1.0f;
-        public const float DiameterCoeff = 0.8f;
+        public static float TrunkDiameter = 1.0f;
+        public static float DiameterCoeff = 0.8f;
 
         public Branch()
             : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }

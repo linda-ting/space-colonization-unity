@@ -14,6 +14,8 @@ namespace AssemblyCSharp.Assets.Scripts
         public uint Age => _age;
         public AttractorCloud Attractors => _attractorCloud;
 
+        private int _maxAge = 25;
+
         public TreePlant() : this(new Branch(), new AttractorCloud()) { }
 
         public TreePlant(Branch root) : this(root, new AttractorCloud()) { }
@@ -35,11 +37,20 @@ namespace AssemblyCSharp.Assets.Scripts
         }
 
         /// <summary>
+        /// Set max age for tree to grow until
+        /// </summary>
+        /// <param name="age"></param>
+        public void SetMaxAge(int age)
+        {
+            _maxAge = age;
+        }
+
+        /// <summary>
         /// Grow tree
         /// </summary>
         public void Grow()
         {
-            if (_attractorCloud.Points.Count == 0 || _age > 25) return;
+            if (_attractorCloud.Points.Count == 0 || _age > _maxAge) return;
 
             Debug.Log("growing tree! age: " + _age);
 

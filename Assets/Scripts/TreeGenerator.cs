@@ -37,6 +37,11 @@ namespace AssemblyCSharp.Assets.Scripts
             }
         }
 
+		public void SetTreeAge(int age)
+        {
+			_treePlant.SetMaxAge(age);
+        }
+
 		/// <summary>
         /// Redraws mesh of tree
         /// </summary>
