@@ -16,6 +16,7 @@ namespace AssemblyCSharp.Assets.Scripts
         {
             _points = new List<AttractorPoint>();
             GenerateAttractorsSphere(3.0f);
+            //GenerateAttractorsCube(4.0f);
         }
 
         public AttractorCloud(List<AttractorPoint> points)
@@ -35,6 +36,35 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 dir = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
                 float r = Random.Range(0, radius);
                 Vector3 pos = r * dir + offset;
+                AttractorPoint attractor = new AttractorPoint(pos);
+                _points.Add(attractor);
+            }
+
+            GenerateAttractorsTrunk(0.3f, 1.5f * radius);
+        }
+
+        private void GenerateAttractorsCube(float side)
+        {
+            Vector3 offset = 1.0f * side * Vector3.up;
+            float half = side / 2f;
+            for (int i = 0; i < NumSampleAttractors; i++)
+            {
+                Vector3 pos = new Vector3(Random.Range(-half, half), Random.Range(-half, half), Random.Range(-half, half)) + offset;
+                AttractorPoint attractor = new AttractorPoint(pos);
+                _points.Add(attractor);
+            }
+
+            GenerateAttractorsTrunk(0.3f, side);
+        }
+
+        private void GenerateAttractorsTrunk(float radius, float height)
+        {
+            for (int i = 0; i < NumSampleAttractors / 5; i++)
+            {
+                Vector3 dir = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
+                float r = Random.Range(0, radius);
+                float h = Random.Range(0, height);
+                Vector3 pos = r * dir + h * Vector3.up;
                 AttractorPoint attractor = new AttractorPoint(pos);
                 _points.Add(attractor);
             }

@@ -9,14 +9,10 @@ namespace AssemblyCSharp.Assets.Scripts
         private Branch _root;
         private uint _age;
         private AttractorCloud _attractorCloud;
-		private MeshFilter _meshFilter; 
 
         public Branch Root => _root;
         public uint Age => _age;
         public AttractorCloud Attractors => _attractorCloud;
-		public MeshFilter MeshFilter => _meshFilter;
-
-		public const int BranchSubdivisions = 8;
 
         public TreePlant() : this(new Branch(), new AttractorCloud()) { }
 

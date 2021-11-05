@@ -49,12 +49,11 @@ namespace AssemblyCSharp.Assets.Scripts
         public const float BranchingAngle = 0.523f;
 
         public const float GrowthLength = 0.4f;
-        public const float KillDistance = 1.2f;
+        public const float KillDistance = 0.7f;
         public const float PerceptionLength = 1.8f;
         public const float PerceptionRadius = 1.5f;
         public const float RandomGrowthParam = 0.1f;
 
-        public const float ExtremitiesDiameter = 0.05f;
         public const float TrunkDiameter = 1.0f;
         public const float DiameterCoeff = 0.8f;
 
@@ -288,16 +287,7 @@ namespace AssemblyCSharp.Assets.Scripts
                 _length = Mathf.Min(Vector3.Distance(centroid, PositionEnd), GrowthLength);
             } else
             {
-                if (_children.Count == 0)
-                {
-                    // grow extremity in random direction
-                    _orientation += GetRandomOrientation() * RandomGrowthParam;
-                    _orientation.Normalize();
-                } else
-                {
-                    // make dormant if not an extremity
-                    _isDormant = true;
-                }
+                _isDormant = true;
             }
 
             // make sure children buds remain attached

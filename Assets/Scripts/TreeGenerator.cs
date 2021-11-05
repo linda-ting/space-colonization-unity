@@ -11,7 +11,7 @@ namespace AssemblyCSharp.Assets.Scripts
         public AttractorCloud _attractors;
         public float _timeLapsed;
         public const float _updateTime = 0.5f;
-		public const int BranchSubdivisions = 4;
+		public const int BranchSubdivisions = 8;
 
 		[SerializeField]
 		public MeshFilter _meshFilter;
@@ -100,11 +100,11 @@ namespace AssemblyCSharp.Assets.Scripts
                 }
 			}
 
-			Mesh mesh = new Mesh();
+			Mesh mesh = _meshFilter.mesh;
+			mesh.Clear();
 			mesh.vertices = vertices;
-			mesh.SetTriangles(triangles, 0);
+			mesh.triangles = triangles;
 			mesh.RecalculateNormals();
-			_meshFilter.mesh = mesh;
 		}
 
 
