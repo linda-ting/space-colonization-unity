@@ -44,19 +44,18 @@ namespace AssemblyCSharp.Assets.Scripts
         public uint Id => _id;
 
         // constants
-        public static float InternodeLength = 1.0f;
         public static float RollAngle = 30f;
         public static float BranchingAngle = 30f;
         public static int MaxBranching = 4;
 
         public static float GrowthLength = 0.4f;
-        public static float KillDistance = 0.7f;
+        public static float KillDistance = 1.0f;
         public static float PerceptionLength = 1.8f;
         public static float PerceptionRadius = 1.5f;
         public static float RandomGrowthParam = 0.1f;
 
         public static float TrunkDiameter = 1.0f;
-        public static float DiameterCoeff = 0.8f;
+        public static float DiameterCoeff = 0.9f;
 
         public Branch()
             : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }
@@ -183,8 +182,6 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void Grow(AttractorCloud cloud)
         {
-            //ColonizeSpace(cloud);
-
             // grow children
             foreach (Branch b in _children)
             {
@@ -205,7 +202,6 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 budPos = PositionEnd;
                 Vector3 budOri = _orientation;
                 Branch bud = new Branch(budPos, budOri, BranchType.lateral_bud);
-                //bud.ColonizeSpace(cloud);
                 AddChild(bud);
             }
             else if (_type == BranchType.lateral_bud)
@@ -224,7 +220,6 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 budPos = PositionEnd;
                 Vector3 budOri = _orientation;
                 Branch bud = new Branch(budPos, budOri, BranchType.apical_bud);
-                //bud.ColonizeSpace(cloud);
                 AddChild(bud);
             }
         }
@@ -244,7 +239,6 @@ namespace AssemblyCSharp.Assets.Scripts
             // transform perception space according to branching angle
             Quaternion rot = Quaternion.AngleAxis(BranchingAngle, Vector3.up);
             Vector3 ori = rot * _orientation;
-            Debug.Log(_orientation + " " + ori);
 
             // iterate through all attractor points
             foreach (AttractorPoint point in cloud.Points)

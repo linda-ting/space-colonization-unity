@@ -34,6 +34,12 @@ namespace AssemblyCSharp.Assets.Scripts
         [SerializeField]
         private InputField _treeAgeInput;
 
+        [SerializeField]
+        private InputField _branchingAngleInput;
+
+        [SerializeField]
+        private InputField _numBranchesInput;
+
 
         public void UpdateParamsCallback()
         {
@@ -79,16 +85,23 @@ namespace AssemblyCSharp.Assets.Scripts
                 int age = int.Parse(_treeAgeInput.text.Trim());
                 _treeGenerator.SetTreeAge(age);
             }
+
+            if (!string.IsNullOrEmpty(_branchingAngleInput.text))
+            {
+                int angle = int.Parse(_branchingAngleInput.text.Trim());
+                Branch.BranchingAngle = angle;
+            }
+
+            if (!string.IsNullOrEmpty(_numBranchesInput.text))
+            {
+                int num = int.Parse(_numBranchesInput.text.Trim());
+                Branch.MaxBranching = num;
+            }
         }
 
         public void ResetParamsCallback()
         {
             Debug.Log("resetting params!");
-            /* 
-            Branch.InternodeLength = 1.0f;
-            Branch.RollAngle = 0.523f;
-            Branch.BranchingAngle = 0.523f;*/
-
             Branch.GrowthLength = 0.4f;
             Branch.KillDistance = 0.7f;
             Branch.PerceptionLength = 1.8f;
@@ -96,6 +109,8 @@ namespace AssemblyCSharp.Assets.Scripts
             Branch.RandomGrowthParam = 0.1f;
             Branch.TrunkDiameter = 1.0f;
             Branch.DiameterCoeff = 0.8f;
+            Branch.BranchingAngle = 30;
+            Branch.MaxBranching = 4;
         }
 
         public void StartCallback()
