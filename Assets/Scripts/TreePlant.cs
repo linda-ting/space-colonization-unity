@@ -14,7 +14,7 @@ namespace AssemblyCSharp.Assets.Scripts
         public uint Age => _age;
         public AttractorCloud Attractors => _attractorCloud;
 
-        private int _maxAge = 25;
+        private int _maxAge = 50;
 
         public TreePlant() : this(new Branch(), new AttractorCloud()) { }
 
@@ -60,14 +60,17 @@ namespace AssemblyCSharp.Assets.Scripts
             // clear nearest branches for attractor points
             _attractorCloud.ClearNearestBranches();
 
+            // grow the tree
+            _root.Grow(_attractorCloud);
+
             // find new nearest branches for attractor points
             _root.FindAttractors(_attractorCloud);
 
             // add active attractors for branches
             _attractorCloud.AddAttractorsToBranches();
 
-            // grow the tree
-            _root.Grow(_attractorCloud);
+            // colonize space
+            _root.ColonizeSpace(_attractorCloud);
 
             // kill flagged attractor points
             _attractorCloud.ClearRemovedPoints();

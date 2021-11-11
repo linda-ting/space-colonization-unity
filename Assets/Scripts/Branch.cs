@@ -45,8 +45,9 @@ namespace AssemblyCSharp.Assets.Scripts
 
         // constants
         public static float InternodeLength = 1.0f;
-        public static float RollAngle = 0.523f;
-        public static float BranchingAngle = 0.523f;
+        public static float RollAngle = 30f;
+        public static float BranchingAngle = 30f;
+        public static int MaxBranching = 4;
 
         public static float GrowthLength = 0.4f;
         public static float KillDistance = 0.7f;
@@ -163,6 +164,10 @@ namespace AssemblyCSharp.Assets.Scripts
             _length = GrowthLength;
         }
 
+        /// <summary>
+        /// Add subtree rooted at this branch to list
+        /// </summary>
+        /// <param name="allBranches"></param>
         public void GetSubtree(List<Branch> allBranches)
         {
             if (!allBranches.Contains(this)) allBranches.Add(this);
@@ -178,7 +183,7 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void Grow(AttractorCloud cloud)
         {
-            ColonizeSpace(cloud);
+            //ColonizeSpace(cloud);
 
             // grow children
             foreach (Branch b in _children)
@@ -194,10 +199,13 @@ namespace AssemblyCSharp.Assets.Scripts
                 // grow metamer into internode
                 _type = BranchType.internode;
 
+                if (_children.Count >= MaxBranching) return;
+
                 // add lateral bud
                 Vector3 budPos = PositionEnd;
                 Vector3 budOri = _orientation;
                 Branch bud = new Branch(budPos, budOri, BranchType.lateral_bud);
+                //bud.ColonizeSpace(cloud);
                 AddChild(bud);
             }
             else if (_type == BranchType.lateral_bud)
@@ -210,10 +218,13 @@ namespace AssemblyCSharp.Assets.Scripts
                 // grow apical bud into metamer
                 _type = BranchType.metamer;
 
+                if (_children.Count >= MaxBranching) return;
+
                 // add apical bud
                 Vector3 budPos = PositionEnd;
                 Vector3 budOri = _orientation;
                 Branch bud = new Branch(budPos, budOri, BranchType.apical_bud);
+                //bud.ColonizeSpace(cloud);
                 AddChild(bud);
             }
         }
@@ -230,6 +241,11 @@ namespace AssemblyCSharp.Assets.Scripts
                 b.FindAttractors(cloud);
             }
 
+            // transform perception space according to branching angle
+            Quaternion rot = Quaternion.AngleAxis(BranchingAngle, Vector3.up);
+            Vector3 ori = rot * _orientation;
+            Debug.Log(_orientation + " " + ori);
+
             // iterate through all attractor points
             foreach (AttractorPoint point in cloud.Points)
             {
@@ -238,11 +254,11 @@ namespace AssemblyCSharp.Assets.Scripts
                 // only consider this point if within conical perception volume
                 if (dist > PerceptionLength) continue;
 
-                float cone_dist = Vector3.Dot(point.Position - PositionEnd, Orientation);
+                float cone_dist = Vector3.Dot(point.Position - PositionEnd, ori);
                 if (cone_dist < 0 || cone_dist > PerceptionLength) continue;
 
                 float cone_radius = cone_dist * PerceptionRadius / PerceptionLength;
-                float orth_dist = Vector3.Magnitude(point.Position - PositionEnd - cone_dist * Orientation);
+                float orth_dist = Vector3.Magnitude(point.Position - PositionEnd - cone_dist * ori);
                 if (orth_dist > cone_radius) continue;
 
                 // if this is the closest branch to this point, set pointer
@@ -256,6 +272,13 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <param name="c"></param>
         public void ColonizeSpace(AttractorCloud cloud)
         {
+            foreach (Branch b in _children) {
+                b.ColonizeSpace(cloud);
+            }
+
+            // do not change orientation if not a bud
+            if (_type == BranchType.metamer || _type == BranchType.internode) return;
+
             // remove attractor points within kill distance
             foreach (AttractorPoint point in cloud.Points)
             {
@@ -288,12 +311,6 @@ namespace AssemblyCSharp.Assets.Scripts
             } else
             {
                 _isDormant = true;
-            }
-
-            // make sure children buds remain attached
-            foreach (Branch b in _children)
-            {
-                b.SetPosition(PositionEnd);
             }
         }
 
