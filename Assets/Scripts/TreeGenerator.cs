@@ -14,6 +14,12 @@ namespace AssemblyCSharp.Assets.Scripts
 		public const int BranchSubdivisions = 8;
 
 		[SerializeField]
+		public DepthSensor _depthSensor;
+
+		private bool _isPaused;
+		public bool IsPaused => _isPaused;
+
+		[SerializeField]
 		public MeshFilter _meshFilter;
 
 		// Start is called before the first frame update
@@ -22,11 +28,21 @@ namespace AssemblyCSharp.Assets.Scripts
             _timeLapsed = 0.0f;
             _attractors = new AttractorCloud();
             _treePlant = new TreePlant(new Branch(), _attractors);
+			_isPaused = true;
+
+			//_depthSensor = GetComponent<DepthSensor>();
+			if (_depthSensor != null)
+			{
+				Debug.Log(_depthSensor);
+				ParsePointCloudFromImage("Assets/tree.jpg");
+			}
 		}
 
 		// Update is called once per frame
 		void Update()
         {
+			if (_isPaused) return;
+
             _timeLapsed += Time.deltaTime;
 
             if (_timeLapsed > _updateTime)
@@ -37,6 +53,38 @@ namespace AssemblyCSharp.Assets.Scripts
             }
         }
 
+		/// <summary>
+        /// Unpause growth
+        /// </summary>
+		public void StartGrowing()
+        {
+			_isPaused = false;
+        }
+
+		/// <summary>
+        /// Pause growth
+        /// </summary>
+		public void StopGrowing()
+        {
+			_isPaused = true;
+        }
+
+		/// <summary>
+        /// Updates point cloud using data parsed from input image
+        /// </summary>
+        /// <param name="filename"></param>
+		public void ParsePointCloudFromImage(string filename)
+        {
+			_depthSensor.LoadInputImage(filename);
+			Vector3[] vertices = _depthSensor.GetPointsScaled(6);
+			_attractors = new AttractorCloud(vertices);
+			Debug.Log(_attractors.Points.Count);
+        }
+
+		/// <summary>
+        /// Set maximum age of tree
+        /// </summary>
+        /// <param name="age"></param>
 		public void SetTreeAge(int age)
         {
 			_treePlant.SetMaxAge(age);
@@ -58,6 +106,7 @@ namespace AssemblyCSharp.Assets.Scripts
 			for (int i = 0; i < numBranches; i++)
 			{
 				Branch b = branches[i];
+				b.ComputeDiameter();
 				int vert_idx = (int)b.Id * BranchSubdivisions;
 				Quaternion q = Quaternion.FromToRotation(Vector3.up, b.Orientation);
 
@@ -68,8 +117,7 @@ namespace AssemblyCSharp.Assets.Scripts
 					Vector3 end_pos = q * unrotated_pos + b.PositionEnd;
 					vertices[vert_idx + j] = end_pos - transform.position;
 
-					// if this branch is root, add vertices for base of trunk
-					// TODO fix triangle indexing so last branch does not connect to trunk base
+					// TODO if this branch is root, add vertices for base of trunk
 					//vertices[numBranches * BranchSubdivisions + j] = b.Position + unrotated_pos - transform.position;
 				}
 			}

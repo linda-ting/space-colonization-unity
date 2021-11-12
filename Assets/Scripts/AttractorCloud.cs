@@ -24,6 +24,16 @@ namespace AssemblyCSharp.Assets.Scripts
             _points = points;
         }
 
+        public AttractorCloud(Vector3[] points)
+        {
+            _points = new List<AttractorPoint>();
+            foreach (Vector3 pos in points)
+            {
+                AttractorPoint point = new AttractorPoint(pos);
+                _points.Add(point);
+            }
+        }
+
         /// <summary>
         /// Generates randomly sampled attractor points within a specific sphere radius
         /// </summary>

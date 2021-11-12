@@ -40,6 +40,8 @@ namespace AssemblyCSharp.Assets.Scripts
         [SerializeField]
         private InputField _numBranchesInput;
 
+        private bool _isPaused = true;
+
 
         public void UpdateParamsCallback()
         {
@@ -111,6 +113,20 @@ namespace AssemblyCSharp.Assets.Scripts
             Branch.DiameterCoeff = 0.8f;
             Branch.BranchingAngle = 30;
             Branch.MaxBranching = 4;
+        }
+
+        public void ToggleGrowth()
+        {
+            _isPaused = !_isPaused;
+
+            if (_isPaused)
+            {
+                _treeGenerator.StopGrowing();
+            }
+            else
+            {
+                _treeGenerator.StartGrowing();
+            }
         }
 
         public void StartCallback()
