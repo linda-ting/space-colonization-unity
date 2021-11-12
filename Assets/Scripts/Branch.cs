@@ -55,7 +55,7 @@ namespace AssemblyCSharp.Assets.Scripts
         public static float RandomGrowthParam = 0.1f;
 
         public static float TrunkDiameter = 1.0f;
-        public static float DiameterCoeff = 0.9f;
+        public static float DiameterCoeff = 0.82f;
 
         public Branch()
             : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }

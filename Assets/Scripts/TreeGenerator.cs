@@ -76,9 +76,9 @@ namespace AssemblyCSharp.Assets.Scripts
 		public void ParsePointCloudFromImage(string filename)
         {
 			_depthSensor.LoadInputImage(filename);
-			Vector3[] vertices = _depthSensor.GetPointsScaled(6);
+			Vector3[] vertices = _depthSensor.GetSampledPointsCenteredScaled(6, 500);
 			_attractors = new AttractorCloud(vertices);
-			Debug.Log(_attractors.Points.Count);
+			_treePlant.SetAttractorCloud(_attractors);
         }
 
 		/// <summary>

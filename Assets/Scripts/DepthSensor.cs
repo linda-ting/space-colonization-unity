@@ -134,17 +134,23 @@ public class DepthSensor : MonoBehaviour
     }
 
     /// <summary>
-    /// Get depth map points scaled by input scale
+    /// Sample points of depth map scaled and centered
     /// </summary>
     /// <param name="scale"></param>
+    /// <param name="num"></param>
     /// <returns></returns>
-    public Vector3[] GetPointsScaled(float scale)
+    public Vector3[] GetSampledPointsCenteredScaled(float scale, int num)
     {
-        Vector3[] outVert = _vertices;
-        for (int i = 0; i < _vertices.Length; i++)
+        int sampleEvery = _vertices.Length / num;
+        Vector3[] outVert = new Vector3[num];
+        int len = 0;
+
+        for (int i = 0; i < _vertices.Length && len < num; i += sampleEvery)
         {
-            outVert[i] = scale * _vertices[i];
+            outVert[len] = scale * (_vertices[i] - new Vector3(0.45f, 0, 0.25f));
+            len++;
         }
+
         return outVert;
     }
 }
