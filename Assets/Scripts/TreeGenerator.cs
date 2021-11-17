@@ -30,11 +30,10 @@ namespace AssemblyCSharp.Assets.Scripts
             _treePlant = new TreePlant(new Branch(), _attractors);
 			_isPaused = true;
 
-			//_depthSensor = GetComponent<DepthSensor>();
+			// TODO add user input to upload image
 			if (_depthSensor != null)
 			{
-				Debug.Log(_depthSensor);
-				ParsePointCloudFromImage("Assets/tree.jpg");
+				ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
 			}
 		}
 
@@ -76,7 +75,8 @@ namespace AssemblyCSharp.Assets.Scripts
 		public void ParsePointCloudFromImage(string filename)
         {
 			_depthSensor.LoadInputImage(filename);
-			Vector3[] vertices = _depthSensor.GetSampledPointsCenteredScaled(6, 500);
+			//Vector3[] vertices = _depthSensor.GetSampledPointsCenteredScaled(6, 500);
+			Vector3[] vertices = _depthSensor.GetSampledPointsCenteredScaledRotated(6, 500);
 			_attractors = new AttractorCloud(vertices);
 			_treePlant.SetAttractorCloud(_attractors);
         }

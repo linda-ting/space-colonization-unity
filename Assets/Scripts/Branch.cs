@@ -51,7 +51,7 @@ namespace AssemblyCSharp.Assets.Scripts
         public static float GrowthLength = 0.4f;
         public static float KillDistance = 1.0f;
         public static float PerceptionLength = 1.8f;
-        public static float PerceptionRadius = 1.5f;
+        public static float PerceptionRadius = 1.8f;
         public static float RandomGrowthParam = 0.1f;
 
         public static float TrunkDiameter = 1.0f;

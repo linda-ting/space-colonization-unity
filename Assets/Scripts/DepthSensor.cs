@@ -144,11 +144,46 @@ public class DepthSensor : MonoBehaviour
         int sampleEvery = _vertices.Length / num;
         Vector3[] outVert = new Vector3[num];
         int len = 0;
+        Vector3 centroid = new Vector3(0, 0, 0);
 
         for (int i = 0; i < _vertices.Length && len < num; i += sampleEvery)
         {
-            outVert[len] = scale * (_vertices[i] - new Vector3(0.45f, 0, 0.25f));
+            outVert[len] = scale * _vertices[i];
+            centroid += outVert[len] / num;
             len++;
+        }
+
+        for (int i = 0; i < num; i++)
+        {
+            outVert[i] -= new Vector3(centroid.x, 0, centroid.z);
+        }
+
+        return outVert;
+    }
+
+    /// <summary>
+    /// Sample points of depth map scaled, centered, and rotated about x axis
+    /// </summary>
+    /// <param name="scale"></param>
+    /// <param name="num"></param>
+    /// <returns></returns>
+    public Vector3[] GetSampledPointsCenteredScaledRotated(float scale, int num)
+    {
+        int sampleEvery = _vertices.Length / num;
+        Vector3[] outVert = new Vector3[num];
+        int len = 0;
+        Vector3 centroid = new Vector3(0, 0, 0);
+
+        for (int i = 0; i < _vertices.Length && len < num; i += sampleEvery)
+        {
+            outVert[len] = scale * new Vector3(_vertices[i].x, _vertices[i].z, _vertices[i].y);
+            centroid += outVert[len] / num;
+            len++;
+        }
+
+        for (int i = 0; i < num; i++)
+        {
+            outVert[i] -= new Vector3(centroid.x, 0, centroid.z);
         }
 
         return outVert;
