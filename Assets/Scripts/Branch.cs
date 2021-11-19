@@ -17,6 +17,8 @@ namespace AssemblyCSharp.Assets.Scripts
         // private properties
         private Vector3 _position;
         private Vector3 _orientation;
+        private Vector3 _right;
+        private Vector3 _forward;
         private uint _degree;
         private Branch _parent;
         private List<Branch> _children;
@@ -33,6 +35,8 @@ namespace AssemblyCSharp.Assets.Scripts
         public Vector3 Position => _position;
         public Vector3 PositionEnd => _position + _orientation * _length;
         public Vector3 Orientation => _orientation;
+        public Vector3 Right => _right;
+        public Vector3 Forward => _forward;
         public uint Degree => _degree;
         public Branch Parent => _parent;
         public List<Branch> Children => _children;
@@ -58,18 +62,20 @@ namespace AssemblyCSharp.Assets.Scripts
         public static float DiameterCoeff = 0.82f;
 
         public Branch()
-            : this(Vector3.zero, Vector3.up, BranchType.metamer, GrowthLength, 0, null) { }
+            : this(Vector3.zero, Vector3.up, Vector3.right, BranchType.metamer, GrowthLength, 0, null) { }
 
-        public Branch(Vector3 position, Vector3 orientation, BranchType type)
-            : this(position, orientation, type, GrowthLength, 0, null) { }
+        public Branch(Vector3 position, Vector3 orientation, Vector3 right, BranchType type)
+            : this(position, orientation, right, type, GrowthLength, 0, null) { }
 
-        public Branch(Vector3 position, Vector3 orientation, BranchType type, float length)
-            : this(position, orientation, type, length, 0, null) { }
+        public Branch(Vector3 position, Vector3 orientation, Vector3 right, BranchType type, float length)
+            : this(position, orientation, right, type, length, 0, null) { }
 
-        public Branch(Vector3 position, Vector3 orientation, BranchType type, float length, uint degree, Branch parent)
+        public Branch(Vector3 position, Vector3 orientation, Vector3 right, BranchType type, float length, uint degree, Branch parent)
         {
             _position = position;
             _orientation = orientation;
+            _right = right;
+            _forward = Vector3.Cross(_orientation, _right).normalized;
             _degree = degree;
             _parent = parent;
             _children = new List<Branch>();
@@ -201,8 +207,11 @@ namespace AssemblyCSharp.Assets.Scripts
                 // add lateral bud
                 Vector3 budPos = PositionEnd;
                 Vector3 budOri = _orientation;
-                Branch bud = new Branch(budPos, budOri, BranchType.lateral_bud);
+                Vector3 budRight = _right;
+                Branch bud = new Branch(budPos, budOri, budRight, BranchType.lateral_bud);
                 AddChild(bud);
+
+                // grow leaf
             }
             else if (_type == BranchType.lateral_bud)
             {
@@ -219,8 +228,11 @@ namespace AssemblyCSharp.Assets.Scripts
                 // add apical bud
                 Vector3 budPos = PositionEnd;
                 Vector3 budOri = _orientation;
-                Branch bud = new Branch(budPos, budOri, BranchType.apical_bud);
+                Vector3 budRight = _right;
+                Branch bud = new Branch(budPos, budOri, budRight, BranchType.apical_bud);
                 AddChild(bud);
+
+                // grow leaf
             }
         }
 
@@ -237,7 +249,8 @@ namespace AssemblyCSharp.Assets.Scripts
             }
 
             // transform perception space according to branching angle
-            Quaternion rot = Quaternion.AngleAxis(BranchingAngle, Vector3.up);
+            float angle = Random.value > 0.5 ? BranchingAngle : -BranchingAngle;
+            Quaternion rot = Quaternion.AngleAxis(angle, _forward);
             Vector3 ori = rot * _orientation;
 
             // iterate through all attractor points
@@ -294,11 +307,6 @@ namespace AssemblyCSharp.Assets.Scripts
                 orientation /= _attractors.Count;
                 orientation += GetRandomOrientation() * RandomGrowthParam;
                 _orientation = orientation.normalized;
-
-                if (_parent != null)
-                {
-                    // TODO add constraints on branching angle relative to parent branch (if any)
-                }
 
                 centroid /= _attractors.Count;
                 _length = Mathf.Min(Vector3.Distance(centroid, PositionEnd), GrowthLength);

@@ -31,10 +31,12 @@ namespace AssemblyCSharp.Assets.Scripts
 			_isPaused = true;
 
 			// TODO add user input to upload image
+			/*
 			if (_depthSensor != null)
 			{
 				ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
 			}
+			*/
 		}
 
 		// Update is called once per frame
