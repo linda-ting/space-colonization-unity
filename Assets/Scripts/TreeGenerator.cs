@@ -35,8 +35,7 @@ namespace AssemblyCSharp.Assets.Scripts
 			if (_depthSensor != null)
 			{
 				ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
-			}
-			*/
+			}*/
 		}
 
 		// Update is called once per frame
@@ -104,6 +103,8 @@ namespace AssemblyCSharp.Assets.Scripts
 			Vector3[] vertices = new Vector3[(numBranches + 1) * BranchSubdivisions];
 			int[] triangles = new int[numBranches * BranchSubdivisions * 6];
 
+			List<int> leafBranches = new List<int>();
+
 			// create vertices
 			for (int i = 0; i < numBranches; i++)
 			{
@@ -111,6 +112,12 @@ namespace AssemblyCSharp.Assets.Scripts
 				b.ComputeDiameter();
 				int vert_idx = (int)b.Id * BranchSubdivisions;
 				Quaternion q = Quaternion.FromToRotation(Vector3.up, b.Orientation);
+
+				// flag which branches need leaves
+				if (b.Degree >= 4)
+                {
+					leafBranches.Add(i);
+                }
 
 				for (int j = 0; j < BranchSubdivisions; j++)
 				{

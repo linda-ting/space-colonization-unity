@@ -183,6 +183,15 @@ namespace AssemblyCSharp.Assets.Scripts
             }
         }
 
+        private bool WillBranch()
+        {
+            float func = 1f - 0.9f * Mathf.Pow(2, -0.25f * _degree);
+            float rand = Random.Range(0f, 1f);
+            float u = 0.7f;
+            float prob = u * func + (1 - u) * rand;
+            return prob > 0.5;
+        }
+
         /// <summary>
         /// Grow this branch (recursive & rule-based)
         /// </summary>
@@ -202,7 +211,7 @@ namespace AssemblyCSharp.Assets.Scripts
                 // grow metamer into internode
                 _type = BranchType.internode;
 
-                if (_children.Count >= MaxBranching) return;
+                if (_children.Count > 0 && !WillBranch() || _children.Count >= MaxBranching) return;
 
                 // add lateral bud
                 Vector3 budPos = PositionEnd;
@@ -210,8 +219,6 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 budRight = _right;
                 Branch bud = new Branch(budPos, budOri, budRight, BranchType.lateral_bud);
                 AddChild(bud);
-
-                // grow leaf
             }
             else if (_type == BranchType.lateral_bud)
             {
@@ -223,7 +230,7 @@ namespace AssemblyCSharp.Assets.Scripts
                 // grow apical bud into metamer
                 _type = BranchType.metamer;
 
-                if (_children.Count >= MaxBranching) return;
+                if (_children.Count > 0 && !WillBranch() || _children.Count >= MaxBranching) return;
 
                 // add apical bud
                 Vector3 budPos = PositionEnd;
@@ -231,8 +238,6 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 budRight = _right;
                 Branch bud = new Branch(budPos, budOri, budRight, BranchType.apical_bud);
                 AddChild(bud);
-
-                // grow leaf
             }
         }
 
