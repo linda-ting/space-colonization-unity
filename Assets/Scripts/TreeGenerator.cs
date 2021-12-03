@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,12 +31,12 @@ namespace AssemblyCSharp.Assets.Scripts
             _treePlant = new TreePlant(new Branch(), _attractors);
 			_isPaused = true;
 
-			// TODO add user input to upload image
-			if (_depthSensor != null)
-			{
-				ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
-			}
-		}
+            //// TODO add user input to upload image
+            //if (_depthSensor != null)
+            //{
+            //    ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
+            //}
+        }
 
 		// Update is called once per frame
 		void Update()
@@ -181,10 +182,46 @@ namespace AssemblyCSharp.Assets.Scripts
                 }
 			}
 
+			// add leaves
+			float side = 0.2f;
+			int startIdx = vertices.Length;
+			Vector3[] verticesWithLeaves = new Vector3[vertices.Length + 4 * leafBranches.Count];
+			int[] trianglesWithLeaves = new int[triangles.Length + 6 * leafBranches.Count];
+			Array.Copy(vertices, verticesWithLeaves, vertices.Length);
+			Array.Copy(triangles, trianglesWithLeaves, triangles.Length);
+
+			for (int i = 0; i < leafBranches.Count; i++)
+            {
+				Branch b = branches[leafBranches[i]];
+				Quaternion q = Quaternion.FromToRotation(Vector3.forward, b.Orientation);
+				//float angle = 0f;
+				float angle = Mathf.PerlinNoise(b.Id, b.Id) > 0.5 ? Branch.BranchingAngle : -Branch.BranchingAngle;
+				Quaternion r = Quaternion.AngleAxis(angle, b.Forward);
+				Vector3 t = b.PositionEnd - transform.position;
+
+				Vector3 botLeft = r * q * new Vector3(0, 0, 0) + t;
+				Vector3 botRight = r * q * new Vector3(0, side, 0) + t;
+				Vector3 topLeft = r * q * new Vector3(side, 0, 0) + t;
+				Vector3 topRight = r * q * new Vector3(side, side, 0) + t;
+
+				verticesWithLeaves[vertices.Length + 4 * i] = botLeft;
+				verticesWithLeaves[vertices.Length + 4 * i + 1] = botRight;
+				verticesWithLeaves[vertices.Length + 4 * i + 2] = topLeft;
+				verticesWithLeaves[vertices.Length + 4 * i + 3] = topRight;
+
+				trianglesWithLeaves[triangles.Length + 6 * i] = startIdx + 4 * i;
+				trianglesWithLeaves[triangles.Length + 6 * i + 1] = startIdx + 4 * i + 1;
+				trianglesWithLeaves[triangles.Length + 6 * i + 2] = startIdx + 4 * i + 2;
+
+				trianglesWithLeaves[triangles.Length + 6 * i + 3] = startIdx + 4 * i + 1;
+				trianglesWithLeaves[triangles.Length + 6 * i + 4] = startIdx + 4 * i + 3;
+				trianglesWithLeaves[triangles.Length + 6 * i + 5] = startIdx + 4 * i + 2;
+			}
+
 			Mesh mesh = _meshFilter.mesh;
 			mesh.Clear();
-			mesh.vertices = vertices;
-			mesh.triangles = triangles;
+			mesh.vertices = verticesWithLeaves;
+			mesh.triangles = trianglesWithLeaves;
 			mesh.RecalculateNormals();
 		}
 
