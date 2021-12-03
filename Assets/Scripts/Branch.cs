@@ -190,8 +190,8 @@ namespace AssemblyCSharp.Assets.Scripts
         {
             float func = 1f - 0.9f * Mathf.Pow(2, -BranchingDistribution * _degree);
             float rand = Random.Range(0f, 1f);
-            float prob = 1 - BranchingRandomness * func + BranchingRandomness * rand;
-            return prob > BranchingProbability;
+            float prob = (1 - BranchingRandomness) * func + BranchingRandomness * rand;
+            return prob > (1f - BranchingProbability);
         }
 
         /// <summary>
