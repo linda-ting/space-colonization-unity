@@ -50,6 +50,9 @@ namespace AssemblyCSharp.Assets.Scripts
         // constants
         public static float RollAngle = 30f;
         public static float BranchingAngle = 30f;
+        public static float BranchingProbability = 0.6f;
+        public static float BranchingDistribution = 0.25f;
+        public static float BranchingRandomness = 0.3f;
         public static int MaxBranching = 4;
 
         public static float GrowthLength = 0.4f;
@@ -185,11 +188,10 @@ namespace AssemblyCSharp.Assets.Scripts
 
         private bool WillBranch()
         {
-            float func = 1f - 0.9f * Mathf.Pow(2, -0.25f * _degree);
+            float func = 1f - 0.9f * Mathf.Pow(2, -BranchingDistribution * _degree);
             float rand = Random.Range(0f, 1f);
-            float u = 0.7f;
-            float prob = u * func + (1 - u) * rand;
-            return prob > 0.5;
+            float prob = 1 - BranchingRandomness * func + BranchingRandomness * rand;
+            return prob > BranchingProbability;
         }
 
         /// <summary>
@@ -311,6 +313,10 @@ namespace AssemblyCSharp.Assets.Scripts
                 }
                 orientation /= _attractors.Count;
                 orientation += GetRandomOrientation() * RandomGrowthParam;
+                _orientation = orientation.normalized;
+
+                // ensure that branches do not go down
+                _orientation[1] = Mathf.Max(-0.1f, _orientation[1]);
                 _orientation = orientation.normalized;
 
                 centroid /= _attractors.Count;

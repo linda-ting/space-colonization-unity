@@ -7,8 +7,10 @@ namespace AssemblyCSharp.Assets.Scripts
     public class AttractorCloud
     {
         private List<AttractorPoint> _points;
+        private Bounds _boundingBox;
 
         public List<AttractorPoint> Points => _points;
+        public Bounds BoundingBox => _boundingBox;
 
         public const int NumSampleAttractors = 300;
 

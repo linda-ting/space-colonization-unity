@@ -31,11 +31,10 @@ namespace AssemblyCSharp.Assets.Scripts
 			_isPaused = true;
 
 			// TODO add user input to upload image
-			/*
 			if (_depthSensor != null)
 			{
 				ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
-			}*/
+			}
 		}
 
 		// Update is called once per frame
@@ -75,10 +74,30 @@ namespace AssemblyCSharp.Assets.Scripts
         /// <param name="filename"></param>
 		public void ParsePointCloudFromImage(string filename)
         {
+			float scale = 6f;
+			int numVert = 500;
+			int numRot = 8;
+
 			_depthSensor.LoadInputImage(filename);
-			//Vector3[] vertices = _depthSensor.GetSampledPointsCenteredScaled(6, 500);
-			Vector3[] vertices = _depthSensor.GetSampledPointsCenteredScaledRotated(6, 500);
-			_attractors = new AttractorCloud(vertices);
+			//Vector3[] vertices = _depthSensor.GetSampledPointsCenteredScaled(scale, numVert);
+			Vector3[] vertices = _depthSensor.GetSampledPointsCenteredScaledRotated(scale, numVert);
+
+			Vector3[] outVertices = new Vector3[numRot * numVert];
+
+			// rotate vertices 8 times to create a hull
+			for (int i = 0; i < numRot; i++)
+            {
+				float angle = i * 360f / numRot;
+				Matrix4x4 rot = Matrix4x4.Rotate(Quaternion.AngleAxis(angle, Vector3.up));
+
+				for (int j = 0; j < numVert; j++)
+                {
+					Vector3 rotVert = rot * vertices[j];
+					outVertices[i * numVert + j] = rotVert;
+                }
+            }
+
+			_attractors = new AttractorCloud(outVertices);
 			_treePlant.SetAttractorCloud(_attractors);
         }
 
