@@ -144,18 +144,18 @@ public class DepthSensor : MonoBehaviour
         int sampleEvery = _vertices.Length / num;
         Vector3[] outVert = new Vector3[num];
         int len = 0;
-        Vector3 centroid = new Vector3(0, 0, 0);
+        Vector3 root = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 
         for (int i = 0; i < _vertices.Length && len < num; i += sampleEvery)
         {
             outVert[len] = scale * _vertices[i];
-            centroid += outVert[len] / num;
+            if (outVert[len][1] <= root[1]) root = outVert[len];
             len++;
         }
 
         for (int i = 0; i < num; i++)
         {
-            outVert[i] -= new Vector3(centroid.x, 0, centroid.z);
+            outVert[i] -= root;
         }
 
         return outVert;
@@ -172,18 +172,18 @@ public class DepthSensor : MonoBehaviour
         int sampleEvery = _vertices.Length / num;
         Vector3[] outVert = new Vector3[num];
         int len = 0;
-        Vector3 centroid = new Vector3(0, 0, 0);
+        Vector3 root = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 
         for (int i = 0; i < _vertices.Length && len < num; i += sampleEvery)
         {
             outVert[len] = scale * new Vector3(_vertices[i].x, _vertices[i].z, _vertices[i].y);
-            centroid += outVert[len] / num;
+            if (outVert[len][1] <= root[1]) root = outVert[len];
             len++;
         }
 
         for (int i = 0; i < num; i++)
         {
-            outVert[i] -= new Vector3(centroid.x, 0, centroid.z);
+            outVert[i] -= root;
         }
 
         return outVert;
