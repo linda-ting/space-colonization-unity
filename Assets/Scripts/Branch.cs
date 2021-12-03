@@ -260,7 +260,24 @@ namespace AssemblyCSharp.Assets.Scripts
             Quaternion rot = Quaternion.AngleAxis(angle, _forward);
             Vector3 ori = rot * _orientation;
 
-            // iterate through all attractor points
+            int cnt = FindAttractorsHelper(cloud, angle, rot, ori, PerceptionLength);
+            if (cnt > 0) return;
+
+            // adjust search length if no attractors found
+            float xDist = Mathf.Min(Mathf.Abs(PositionEnd[0] - cloud.BoundingBox.min[0]),
+                                    Mathf.Abs(PositionEnd[0] - cloud.BoundingBox.max[0]));
+            float zDist = Mathf.Min(Mathf.Abs(PositionEnd[2] - cloud.BoundingBox.min[2]),
+                                    Mathf.Abs(PositionEnd[2] - cloud.BoundingBox.max[2]));
+            float newPerceptionLength = Mathf.Min(xDist, zDist);
+            if (newPerceptionLength <= PerceptionLength) return;
+            //Debug.Log("new perception length " + newPerceptionLength);
+            FindAttractorsHelper(cloud, angle, rot, ori, newPerceptionLength);
+        }
+
+        private int FindAttractorsHelper(AttractorCloud cloud, float angle, Quaternion rot, Vector3 ori, float searchLength)
+        {
+            int cnt = 0;
+
             foreach (AttractorPoint point in cloud.Points)
             {
                 float dist = Vector3.Distance(PositionEnd, point.Position);
@@ -276,8 +293,14 @@ namespace AssemblyCSharp.Assets.Scripts
                 if (orth_dist > cone_radius) continue;
 
                 // if this is the closest branch to this point, set pointer
-                if (dist < point.NearestDist) point.SetNearest(this, dist);
+                if (dist < point.NearestDist)
+                {
+                    point.SetNearest(this, dist);
+                    cnt++;
+                }
             }
+
+            return cnt;
         }
 
         /// <summary>

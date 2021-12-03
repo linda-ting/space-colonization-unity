@@ -16,24 +16,39 @@ namespace AssemblyCSharp.Assets.Scripts
 
         public AttractorCloud()
         {
+            _boundingBox = new Bounds();
             _points = new List<AttractorPoint>();
             GenerateAttractorsSphere(3.0f);
             //GenerateAttractorsCube(4.0f);
+            Debug.Log("bounding box: " + _boundingBox.min + _boundingBox.max);
         }
 
         public AttractorCloud(List<AttractorPoint> points)
         {
+            _boundingBox = new Bounds();
             _points = points;
+
+            foreach (AttractorPoint point in points)
+            {
+                Vector3 pos = point.Position;
+                _boundingBox.Encapsulate(pos);
+            }
+            Debug.Log("bounding box: " + _boundingBox.min + _boundingBox.max);
         }
 
         public AttractorCloud(Vector3[] points)
         {
+            _boundingBox = new Bounds();
             _points = new List<AttractorPoint>();
+
             foreach (Vector3 pos in points)
             {
                 AttractorPoint point = new AttractorPoint(pos);
                 _points.Add(point);
+                _boundingBox.Encapsulate(pos);
             }
+
+            Debug.Log("bounding box: " + _boundingBox.min + _boundingBox.max);
         }
 
         /// <summary>
@@ -43,6 +58,7 @@ namespace AssemblyCSharp.Assets.Scripts
         private void GenerateAttractorsSphere(float radius)
         {
             Vector3 offset = 1.5f * radius * Vector3.up;
+
             for (int i = 0; i < NumSampleAttractors; i++)
             {
                 Vector3 dir = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
@@ -50,8 +66,8 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 pos = r * dir + offset;
                 AttractorPoint attractor = new AttractorPoint(pos);
                 _points.Add(attractor);
+                _boundingBox.Encapsulate(pos);
             }
-
             GenerateAttractorsTrunk(0.3f, 1.5f * radius);
         }
 
@@ -59,11 +75,13 @@ namespace AssemblyCSharp.Assets.Scripts
         {
             Vector3 offset = 1.0f * side * Vector3.up;
             float half = side / 2f;
+
             for (int i = 0; i < NumSampleAttractors; i++)
             {
                 Vector3 pos = new Vector3(Random.Range(-half, half), Random.Range(-half, half), Random.Range(-half, half)) + offset;
                 AttractorPoint attractor = new AttractorPoint(pos);
                 _points.Add(attractor);
+                _boundingBox.Encapsulate(pos);
             }
 
             GenerateAttractorsTrunk(0.3f, side);
@@ -79,6 +97,7 @@ namespace AssemblyCSharp.Assets.Scripts
                 Vector3 pos = r * dir + h * Vector3.up;
                 AttractorPoint attractor = new AttractorPoint(pos);
                 _points.Add(attractor);
+                _boundingBox.Encapsulate(pos);
             }
         }
 
