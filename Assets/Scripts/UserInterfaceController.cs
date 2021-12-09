@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEditor;
 
 namespace AssemblyCSharp.Assets.Scripts
 {
@@ -159,6 +160,13 @@ namespace AssemblyCSharp.Assets.Scripts
             {
                 _treeGenerator.StartGrowing();
             }
+        }
+
+        public void UploadImageCallback()
+        {
+            string path = EditorUtility.OpenFilePanel("Upload image", "", "");
+            Debug.Log("getting point cloud data from image: " + path);
+            _treeGenerator.ParsePointCloudFromImage(path);
         }
 
         public void StartCallback()

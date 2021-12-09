@@ -26,16 +26,18 @@ namespace AssemblyCSharp.Assets.Scripts
 		// Start is called before the first frame update
 		void Start()
         {
-            _timeLapsed = 0.0f;
+			Reset();
+			/*
+            _timeLapsed = 0f;
             _attractors = new AttractorCloud();
             _treePlant = new TreePlant(new Branch(), _attractors);
 			_isPaused = true;
 
-            //// TODO add user input to upload image
-            //if (_depthSensor != null)
-            //{
-            //    ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
-            //}
+            // TODO add user input to upload image
+            if (_depthSensor != null)
+            {
+                ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
+            }*/
         }
 
 		// Update is called once per frame
@@ -69,11 +71,25 @@ namespace AssemblyCSharp.Assets.Scripts
 			_isPaused = true;
         }
 
-		/// <summary>
+        public void Reset()
+        {
+			_timeLapsed = 0f;
+			_attractors = new AttractorCloud();
+			_treePlant = new TreePlant(new Branch(), _attractors);
+			_isPaused = true;
+
+			// TODO add user input to upload image
+			if (_depthSensor != null)
+			{
+				ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
+			}
+		}
+
+        /// <summary>
         /// Updates point cloud using data parsed from input image
         /// </summary>
         /// <param name="filename"></param>
-		public void ParsePointCloudFromImage(string filename)
+        public void ParsePointCloudFromImage(string filename)
         {
 			float scale = 6f;
 			int numVert = 500;
@@ -183,7 +199,7 @@ namespace AssemblyCSharp.Assets.Scripts
 			}
 
 			// add leaves
-			float side = 0.2f;
+			float side = 0.15f;
 			int startIdx = vertices.Length;
 			Vector3[] verticesWithLeaves = new Vector3[vertices.Length + 4 * leafBranches.Count];
 			int[] trianglesWithLeaves = new int[triangles.Length + 6 * leafBranches.Count];
@@ -195,8 +211,8 @@ namespace AssemblyCSharp.Assets.Scripts
 				Branch b = branches[leafBranches[i]];
 				Quaternion q = Quaternion.FromToRotation(Vector3.forward, b.Orientation);
 				//float angle = 0f;
-				float angle = Mathf.PerlinNoise(b.Id, b.Id) > 0.5 ? Branch.BranchingAngle : -Branch.BranchingAngle;
-				Quaternion r = Quaternion.AngleAxis(angle, b.Forward);
+				float angle = Mathf.PerlinNoise(b.Id, b.Id) > 0.5 ? Branch.BranchingAngle : Branch.BranchingAngle + 180;
+				Quaternion r = Quaternion.AngleAxis(angle, b.Orientation);
 				Vector3 t = b.PositionEnd - transform.position;
 
 				Vector3 botLeft = r * q * new Vector3(0, 0, 0) + t;
