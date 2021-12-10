@@ -1,2 +1,3 @@
 # space-colonization-unity
-senior design ! take 2 
+
+[presentation](https://docs.google.com/presentation/d/110DzNCKUy7dzVMFq37ZElFJ7eEMjXkE6aEkWVjDI__Q/edit?usp=sharing)
