@@ -60,6 +60,9 @@ namespace AssemblyCSharp.Assets.Scripts
 			_isPaused = true;
         }
 
+		/// <summary>
+        /// Resets all tree generator properties
+        /// </summary>
         public void Reset()
 		{
 			_isPaused = true;
@@ -70,6 +73,14 @@ namespace AssemblyCSharp.Assets.Scripts
 			_treePlant = new TreePlant(new Branch(), _attractors);
 			_meshFilter.mesh.Clear();
 		}
+
+		/// <summary>
+        /// Resamples attractor point cloud
+        /// </summary>
+		public void SampleRandomPointCloud()
+        {
+			_attractors.GenerateAttractorsSphere();
+        }
 
         /// <summary>
         /// Updates point cloud using data parsed from input image
@@ -137,10 +148,7 @@ namespace AssemblyCSharp.Assets.Scripts
 				Quaternion q = Quaternion.FromToRotation(Vector3.up, b.Orientation);
 
 				// flag which branches need leaves
-				if (b.Degree >= 4)
-                {
-					leafBranches.Add(i);
-                }
+				if (b.Degree >= 5) leafBranches.Add(i);
 
 				for (int j = 0; j < BranchSubdivisions; j++)
 				{
@@ -186,7 +194,7 @@ namespace AssemblyCSharp.Assets.Scripts
 			}
 
 			// add leaves
-			float side = 0.15f;
+			float side = 0.16f;
 			int startIdx = vertices.Length;
 			Vector3[] verticesWithLeaves = new Vector3[vertices.Length + 4 * leafBranches.Count];
 			int[] trianglesWithLeaves = new int[triangles.Length + 6 * leafBranches.Count];
@@ -197,14 +205,14 @@ namespace AssemblyCSharp.Assets.Scripts
             {
 				Branch b = branches[leafBranches[i]];
 				Quaternion q = Quaternion.FromToRotation(Vector3.forward, b.Orientation);
-				//float angle = 0f;
 				float angle = Mathf.PerlinNoise(b.Id, b.Id) > 0.5 ? Branch.BranchingAngle : Branch.BranchingAngle + 180;
 				Quaternion r = Quaternion.AngleAxis(angle, b.Orientation);
+				r *= Quaternion.AngleAxis(angle, b.Forward);
 				Vector3 t = b.PositionEnd - transform.position;
 
 				Vector3 botLeft = r * q * new Vector3(0, 0, 0) + t;
-				Vector3 botRight = r * q * new Vector3(0, side, 0) + t;
-				Vector3 topLeft = r * q * new Vector3(side, 0, 0) + t;
+				Vector3 botRight = r * q * new Vector3(side, 0, 0) + t;
+				Vector3 topLeft = r * q * new Vector3(0, side, 0) + t;
 				Vector3 topRight = r * q * new Vector3(side, side, 0) + t;
 
 				verticesWithLeaves[vertices.Length + 4 * i] = botLeft;

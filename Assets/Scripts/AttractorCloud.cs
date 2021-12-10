@@ -18,8 +18,7 @@ namespace AssemblyCSharp.Assets.Scripts
         {
             _boundingBox = new Bounds();
             _points = new List<AttractorPoint>();
-            GenerateAttractorsSphere(3.0f);
-            //GenerateAttractorsCube(4.0f);
+            //GenerateAttractorsSphere(3.0f);
             Debug.Log("bounding box: " + _boundingBox.min + _boundingBox.max);
         }
 
@@ -55,7 +54,7 @@ namespace AssemblyCSharp.Assets.Scripts
         /// Generates randomly sampled attractor points within a specific sphere radius
         /// </summary>
         /// <param name="radius"></param>
-        private void GenerateAttractorsSphere(float radius)
+        public void GenerateAttractorsSphere(float radius = 3)
         {
             Vector3 offset = 1.5f * radius * Vector3.up;
 
@@ -71,7 +70,7 @@ namespace AssemblyCSharp.Assets.Scripts
             GenerateAttractorsTrunk(0.3f, 1.5f * radius);
         }
 
-        private void GenerateAttractorsCube(float side)
+        public void GenerateAttractorsCube(float side = 4)
         {
             Vector3 offset = 1.0f * side * Vector3.up;
             float half = side / 2f;

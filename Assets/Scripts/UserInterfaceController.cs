@@ -78,7 +78,9 @@ namespace AssemblyCSharp.Assets.Scripts
 
         private bool _isPaused = true;
 
-
+        /// <summary>
+        /// Apply user updates to parameters
+        /// </summary>
         public void UpdateParamsCallback()
         {
             Debug.Log("updating params!");
@@ -99,6 +101,9 @@ namespace AssemblyCSharp.Assets.Scripts
             ResetSliderLabels();
         }
 
+        /// <summary>
+        /// Reset all parameters to default values
+        /// </summary>
         public void ResetParamsCallback()
         {
             Debug.Log("resetting params!");
@@ -131,6 +136,9 @@ namespace AssemblyCSharp.Assets.Scripts
             ResetSliderLabels();
         }
 
+        /// <summary>
+        /// Update slider labels to match values
+        /// </summary>
         private void ResetSliderLabels()
         {
             _growthLengthText.text = System.Math.Round(_growthLengthInput.value, 2).ToString();
@@ -148,6 +156,9 @@ namespace AssemblyCSharp.Assets.Scripts
             _treeAgeText.text = _treeAgeInput.value.ToString();
         }
 
+        /// <summary>
+        /// Plays or pauses tree growth
+        /// </summary>
         public void ToggleGrowth()
         {
             _isPaused = !_isPaused;
@@ -162,11 +173,17 @@ namespace AssemblyCSharp.Assets.Scripts
             }
         }
 
+        /// <summary>
+        /// Clears tree
+        /// </summary>
         public void ClearTreeCallback()
         {
             _treeGenerator.Reset();
         }
 
+        /// <summary>
+        /// Opens file explorer for user to upload image to parse points from
+        /// </summary>
         public void UploadImageCallback()
         {
             string path = EditorUtility.OpenFilePanel("Upload image", "", "");
@@ -174,14 +191,12 @@ namespace AssemblyCSharp.Assets.Scripts
             _treeGenerator.ParsePointCloudFromImage(path);
         }
 
-        public void StartCallback()
+        /// <summary>
+        /// Calls tree generator to sample new random points
+        /// </summary>
+        public void SamplePointsCallback()
         {
-            // TODO
-        }
-
-        public void PauseCallback()
-        {
-            // TODO
+            _treeGenerator.SampleRandomPointCloud();
         }
     }
 }

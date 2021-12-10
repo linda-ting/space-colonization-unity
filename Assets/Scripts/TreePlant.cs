@@ -84,7 +84,7 @@ namespace AssemblyCSharp.Assets.Scripts
         /// </summary>
         public void DrawGizmos()
         {
-            _root.DrawGizmos();
+            //_root.DrawGizmos();
         }
     }
 }
