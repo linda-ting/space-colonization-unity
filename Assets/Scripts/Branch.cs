@@ -132,6 +132,14 @@ namespace AssemblyCSharp.Assets.Scripts
         }
 
         /// <summary>
+        /// Reset last id number of class
+        /// </summary>
+        public static void ResetIdNum()
+        {
+            _lastId = 0;
+        }
+
+        /// <summary>
         /// Add an attractor point to current list of attractors
         /// </summary>
         /// <param name="point"></param>

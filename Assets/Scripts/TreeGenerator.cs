@@ -27,17 +27,6 @@ namespace AssemblyCSharp.Assets.Scripts
 		void Start()
         {
 			Reset();
-			/*
-            _timeLapsed = 0f;
-            _attractors = new AttractorCloud();
-            _treePlant = new TreePlant(new Branch(), _attractors);
-			_isPaused = true;
-
-            // TODO add user input to upload image
-            if (_depthSensor != null)
-            {
-                ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
-            }*/
         }
 
 		// Update is called once per frame
@@ -72,17 +61,14 @@ namespace AssemblyCSharp.Assets.Scripts
         }
 
         public void Reset()
-        {
+		{
+			_isPaused = true;
 			_timeLapsed = 0f;
+			Branch.ResetIdNum();
+			AttractorPoint.ResetIdNum();
 			_attractors = new AttractorCloud();
 			_treePlant = new TreePlant(new Branch(), _attractors);
-			_isPaused = true;
-
-			// TODO add user input to upload image
-			if (_depthSensor != null)
-			{
-				ParsePointCloudFromImage("Assets/Images/tree_bottom_2.jpeg");
-			}
+			_meshFilter.mesh.Clear();
 		}
 
         /// <summary>
@@ -136,9 +122,10 @@ namespace AssemblyCSharp.Assets.Scripts
 			_treePlant.Root.GetSubtree(branches);
 			int numBranches = branches.Count;
 
+			if (numBranches == 0) return;
+
 			Vector3[] vertices = new Vector3[(numBranches + 1) * BranchSubdivisions];
 			int[] triangles = new int[numBranches * BranchSubdivisions * 6];
-
 			List<int> leafBranches = new List<int>();
 
 			// create vertices

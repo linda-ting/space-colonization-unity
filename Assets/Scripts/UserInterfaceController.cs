@@ -162,6 +162,11 @@ namespace AssemblyCSharp.Assets.Scripts
             }
         }
 
+        public void ClearTreeCallback()
+        {
+            _treeGenerator.Reset();
+        }
+
         public void UploadImageCallback()
         {
             string path = EditorUtility.OpenFilePanel("Upload image", "", "");

@@ -50,10 +50,23 @@ namespace AssemblyCSharp.Assets.Scripts
             _nearestBranch = branch;
         }
 
+        /// <summary>
+        /// Set pointer and distance for branch closest to this point
+        /// </summary>
+        /// <param name="branch"></param>
+        /// <param name="dist"></param>
         public void SetNearest(Branch branch, float dist)
         {
             _nearestBranch = branch;
             _nearestDist = dist;
+        }
+
+        /// <summary>
+        /// Reset last id number of class
+        /// </summary>
+        public static void ResetIdNum()
+        {
+            _lastId = 0;
         }
 
         /// <summary>
